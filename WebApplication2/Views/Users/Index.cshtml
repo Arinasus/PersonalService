@@ -1,0 +1,185 @@
+﻿@model List<WebApplication2.Models.User>
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Пользователи";
+
+    string sort = ViewBag.Sort as string ?? "lastLogin";
+    string dir = ViewBag.Dir as string ?? "desc";
+
+    string Arrow(string col)
+    {
+        if (sort != col) return "";
+        return dir == "asc" ? "▲" : "▼";
+    }
+
+    string NextDir(string col)
+    {
+        if (sort == col)
+            return dir == "asc" ? "desc" : "asc";
+        return "asc";
+    }
+}
+
+<div class="card shadow-sm">
+    <div class="card-body">
+
+        <h4 class="mb-3">Пользователи</h4>
+
+        <!-- Фильтр -->
+        <form method="get" class="row g-2 mb-4">
+            <input type="hidden" name="sort" value="@sort" />
+            <input type="hidden" name="dir" value="@dir" />
+
+            <div class="col-md-4 col-12">
+                <input name="search"
+                       class="form-control"
+                       value="@ViewBag.Search"
+                       placeholder="Поиск по имени или email" />
+            </div>
+
+            <div class="col-md-3 col-12">
+                <select name="status" class="form-select">
+                    <option value="" selected="@(ViewBag.Status == "" || ViewBag.Status == null)">Все статусы</option>
+                    <option value="Unverified" selected="@(ViewBag.Status == "Unverified")">Unverified</option>
+                    <option value="Active" selected="@(ViewBag.Status == "Active")">Active</option>
+                    <option value="Blocked" selected="@(ViewBag.Status == "Blocked")">Blocked</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 col-12">
+                <button class="btn btn-primary w-100">Фильтр</button>
+            </div>
+        </form>
+
+        <!-- Toolbar -->
+        <form id="toolbarForm" method="post">
+            <div class="btn-group mb-3">
+
+                <button asp-controller="Users" asp-action="Block"
+                        class="btn btn-warning"
+                        data-bs-toggle="tooltip"
+                        title="Заблокировать выбранных пользователей">
+                    <i class="bi bi-lock"></i>
+                </button>
+
+                <button asp-controller="Users" asp-action="Unblock"
+                        class="btn btn-secondary"
+                        data-bs-toggle="tooltip"
+                        title="Разблокировать выбранных пользователей">
+                    <i class="bi bi-unlock"></i>
+                </button>
+
+                <button asp-controller="Users" asp-action="Delete"
+                        class="btn btn-danger"
+                        data-bs-toggle="tooltip"
+                        title="Удалить выбранных пользователей">
+                    <i class="bi bi-trash"></i>
+                </button>
+
+                <button asp-controller="Users" asp-action="DeleteUnverified"
+                        class="btn btn-outline-danger"
+                        data-bs-toggle="tooltip"
+                        title="Удалить всех непроверенных пользователей">
+                    <i class="bi bi-person-x"></i>
+                </button>
+
+            </div>
+
+            <!-- Таблица -->
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAll" />
+                            </th>
+
+                            <th>
+                                <a class="table-sort"
+                                   asp-controller="Users"
+                                   asp-action="Index"
+                                   asp-route-sort="name"
+                                   asp-route-dir="@NextDir("name")"
+                                   asp-route-search="@ViewBag.Search"
+                                   asp-route-status="@ViewBag.Status">
+                                    Имя
+                                </a>
+                                <span class="sort-arrow">@Arrow("name")</span>
+                            </th>
+
+                            <th>
+                                <a class="table-sort"
+                                   asp-controller="Users"
+                                   asp-action="Index"
+                                   asp-route-sort="email"
+                                   asp-route-dir="@NextDir("email")"
+                                   asp-route-search="@ViewBag.Search"
+                                   asp-route-status="@ViewBag.Status">
+                                    Email
+                                </a>
+                                <span class="sort-arrow">@Arrow("email")</span>
+                            </th>
+
+                            <th>
+                                <a class="table-sort"
+                                   asp-controller="Users"
+                                   asp-action="Index"
+                                   asp-route-sort="lastLogin"
+                                   asp-route-dir="@NextDir("lastLogin")"
+                                   asp-route-search="@ViewBag.Search"
+                                   asp-route-status="@ViewBag.Status">
+                                    Последний вход
+                                </a>
+                                <span class="sort-arrow">@Arrow("lastLogin")</span>
+                            </th>
+
+                            <th>
+                                <a class="table-sort"
+                                   asp-controller="Users"
+                                   asp-action="Index"
+                                   asp-route-sort="status"
+                                   asp-route-dir="@NextDir("status")"
+                                   asp-route-search="@ViewBag.Search"
+                                   asp-route-status="@ViewBag.Status">
+                                    Статус
+                                </a>
+                                <span class="sort-arrow">@Arrow("status")</span>
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @foreach (var u in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="ids" value="@u.Id" class="rowCheck" />
+                                </td>
+                                <td>@u.Name</td>
+                                <td>@u.Email</td>
+                                <td>@u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm")</td>
+                                <td>@u.Status</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const selectAll = document.getElementById("selectAll");
+        if (selectAll) {
+            selectAll.addEventListener("change", function () {
+                document.querySelectorAll(".rowCheck").forEach(cb => cb.checked = this.checked);
+            });
+        }
+
+        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+        tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
+    </script>
+}

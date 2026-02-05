@@ -1,0 +1,42 @@
+﻿@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Вход";
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+<div class="row justify-content-center">
+    <div class="col-md-4 col-11">
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="text-center mb-4">Вход</h4>
+
+                @if (ViewBag.Error != null)
+                {
+                    <div class="alert alert-danger">@ViewBag.Error</div>
+                }
+
+                <form method="post">
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name="email" type="email" class="form-control" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Пароль</label>
+                        <input name="password" type="password" class="form-control" required />
+                    </div>
+
+                    <button class="btn btn-primary w-100">Войти</button>
+
+                    <div class="text-center mt-3">
+                        <a href="/Auth/Register">Создать аккаунт</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
