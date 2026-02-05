@@ -4,7 +4,9 @@ using System.Net.Http.Json;
 
 namespace WebApplication2.Services
 {
-    public class EmailService { private readonly IConfiguration _config; private readonly HttpClient _http; 
+    public class EmailService { 
+        private readonly IConfiguration _config; 
+        private readonly HttpClient _http; 
         public EmailService(IConfiguration config, HttpClient http) { 
             _config = config; _http = http; 
         } 
@@ -19,7 +21,12 @@ namespace WebApplication2.Services
             _http.DefaultRequestHeaders.Clear();
             _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config["RESEND_API_KEY"]}");
 
-            await _http.PostAsJsonAsync("https://api.resend.com/emails", payload); 
+            var response = await _http.PostAsJsonAsync("https://api.resend.com/emails", payload); 
+            if (!response.IsSuccessStatusCode) { 
+                var error = await response.Content.ReadAsStringAsync(); 
+                Console.WriteLine("RESEND ERROR: " + error); 
+                throw new Exception("Resend email failed: " + error); 
+            }
         } 
     }
 }
