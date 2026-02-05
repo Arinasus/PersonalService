@@ -1,104 +1,33 @@
-﻿using System.Net;
-using System.Net.Mail;
+﻿using System.Net.Http.Json;
 
-namespace WebApplication2.Services
+public class EmailService
 {
-    public class EmailService
+    private readonly IConfiguration _config;
+    private readonly HttpClient _http;
+
+    public EmailService(IConfiguration config, HttpClient http)
     {
-        private readonly IConfiguration _config;
+        _config = config;
+        _http = http;
+    }
 
-        public EmailService(IConfiguration config)
+    public async Task SendConfirmationEmailAsync(string email, string token)
+    {
+        var baseUrl = _config["BASE_URL"];
+        var confirmLink = $"{baseUrl}/Auth/Confirm?token={token}";
+
+        var html = $"<h2>Подтверждение</h2><a href='{confirmLink}'>Подтвердить</a>";
+
+        var payload = new
         {
-            _config = config;
-        }
+            from = "noreply@yourdomain.com",
+            to = email,
+            subject = "Подтверждение регистрации",
+            html = html
+        };
 
-        public async Task SendConfirmationEmailAsync(string email, string token)
-        {
-            var baseUrl = _config["BASE_URL"];
-            var confirmLink = $"{baseUrl}/Auth/Confirm?token={token}";
+        _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config["RESEND_API_KEY"]}");
 
-            string html = $@"
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset='UTF-8' />
-    <style>
-        body {{
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            padding: 20px;
-        }}
-        .container {{
-            background: #ffffff;
-            padding: 24px;
-            border-radius: 8px;
-            max-width: 480px;
-            margin: auto;
-            border: 1px solid #e0e0e0;
-        }}
-        h2 {{
-            margin-top: 0;
-            color: #333333;
-        }}
-        p {{
-            color: #555555;
-            line-height: 1.5;
-        }}
-        .btn {{
-            display: inline-block;
-            padding: 12px 20px;
-            background: #86612F;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            margin-top: 20px;
-        }}
-        .footer {{
-            margin-top: 20px;
-            font-size: 12px;
-            color: #888888;
-        }}
-    </style>
-</head>
-<body>
-    <div class='container'>
-        <h2>Подтверждение регистрации</h2>
-
-        <p>Здравствуйте!</p>
-
-        <p>
-            Спасибо за регистрацию. Чтобы активировать ваш аккаунт,
-            нажмите кнопку ниже:
-        </p>
-
-        <a href='{confirmLink}' class='btn'>Подтвердить Email</a>
-
-        <p class='footer'>
-            Если вы не регистрировались — просто игнорируйте это письмо.
-        </p>
-    </div>
-</body>
-</html>";
-
-            var message = new MailMessage();
-            message.To.Add(email);
-            message.Subject = "Подтверждение регистрации";
-            message.Body = html;
-            message.IsBodyHtml = true;
-            message.From = new MailAddress(_config["SMTP_EMAIL"]);
-
-            using var smtp = new SmtpClient("smtp.gmail.com", 587)
-            {
-                Credentials = new NetworkCredential(
-                    _config["SMTP_EMAIL"],
-                    _config["SMTP_PASSWORD"]
-                ),
-                EnableSsl = true
-            };
-
-            await smtp.SendMailAsync(message);
-        }
+        await _http.PostAsJsonAsync("https://api.resend.com/emails", payload);
     }
 }
-
-// Credentials = new NetworkCredential("allyut12zk@gmail.com", "zuudhqoclgydusxx"), EnableSsl = true 
