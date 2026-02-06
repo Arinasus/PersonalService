@@ -94,7 +94,7 @@ namespace WebApplication2.Controllers
             }
             return RedirectToAction("Index");
         }
-        // POST: удалить всех unverified
+        // POST
         [HttpPost] public IActionResult DeleteUnverified() 
         { 
             var users = _context.Users 

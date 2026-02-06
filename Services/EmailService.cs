@@ -8,28 +8,34 @@ namespace WebApplication2.Services
         private readonly IConfiguration _config; 
         private readonly HttpClient _http; 
         public EmailService(IConfiguration config, HttpClient http) { 
-            _config = config; _http = http; 
-        } 
-        public async Task SendConfirmationEmailAsync(string email, string token) { 
-            var baseUrl = _config["BASE_URL"]; 
-            var confirmLink = $"{baseUrl}/Auth/Confirm?token={token}"; 
-            var html = $"<h2>Подтверждение</h2><a href='{confirmLink}'>Подтвердить</a>"; 
-            var payload = new {
-                from = "Acme <onboarding@resend.dev>",
-                to = email, subject = "Подтверждение регистрации", html = html 
-            };
-            _http.DefaultRequestHeaders.Clear();
-            _http.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config["RESEND_API_KEY"]}");
+            _config = config; 
+            _http = http; 
+        }
+        public async Task SendConfirmationEmailAsync(string email, string token)
+        {
+            var baseUrl = _config["BASE_URL"];
+            var confirmLink = $"{baseUrl}/Auth/Confirm?token={token}";
 
-            var response = await _http.PostAsJsonAsync("https://api.resend.com/emails", payload); 
-            if (!response.IsSuccessStatusCode) { 
-                var error = await response.Content.ReadAsStringAsync(); 
-                Console.WriteLine("RESEND ERROR: " + error); 
-                throw new Exception("Resend email failed: " + error); 
+            var html = $"<h2>Подтверждение регистрации</h2><a href='{confirmLink}'>Подтвердить</a>";
+
+            var payload = new
+            {
+                apiKey = _config["ELASTIC_API_KEY"],
+                from = _config["allyut12zk@gmail.com"], 
+                to = email,
+                subject = "Подтверждение регистрации",
+                bodyHtml = html
+            };
+
+            var response = await _http.PostAsJsonAsync("https://api.elasticemail.com/v2/email/send", payload);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("ELASTIC ERROR: " + error);
+                throw new Exception("Elastic email failed: " + error);
             }
-        } 
+        }
+
     }
 }
-
-
-// Credentials = new NetworkCredential("allyut12zk@gmail.com", "zuudhqoclgydusxx"), EnableSsl = true 

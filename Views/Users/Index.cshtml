@@ -25,8 +25,6 @@
     <div class="card-body">
 
         <h4 class="mb-3">Пользователи</h4>
-
-        <!-- Фильтр -->
         <form method="get" class="row g-2 mb-4">
             <input type="hidden" name="sort" value="@sort" />
             <input type="hidden" name="dir" value="@dir" />
@@ -52,7 +50,6 @@
             </div>
         </form>
 
-        <!-- Toolbar -->
         <form id="toolbarForm" method="post">
             <div class="btn-group mb-3">
 
@@ -85,8 +82,6 @@
                 </button>
 
             </div>
-
-            <!-- Таблица -->
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
                     <thead class="table-light">
@@ -94,7 +89,6 @@
                             <th>
                                 <input type="checkbox" id="selectAll" />
                             </th>
-
                             <th>
                                 <a class="table-sort"
                                    asp-controller="Users"
@@ -107,7 +101,6 @@
                                 </a>
                                 <span class="sort-arrow">@Arrow("name")</span>
                             </th>
-
                             <th>
                                 <a class="table-sort"
                                    asp-controller="Users"
@@ -120,7 +113,6 @@
                                 </a>
                                 <span class="sort-arrow">@Arrow("email")</span>
                             </th>
-
                             <th>
                                 <a class="table-sort"
                                    asp-controller="Users"
@@ -133,7 +125,6 @@
                                 </a>
                                 <span class="sort-arrow">@Arrow("lastLogin")</span>
                             </th>
-
                             <th>
                                 <a class="table-sort"
                                    asp-controller="Users"
@@ -153,9 +144,7 @@
                         @foreach (var u in Model)
                         {
                             <tr>
-                                <td>
-                                    <input type="checkbox" name="ids" value="@u.Id" class="rowCheck" />
-                                </td>
+                                <td> <input type="checkbox" name="ids" value="@u.Id" class="rowCheck" /> </td>
                                 <td>@u.Name</td>
                                 <td>@u.Email</td>
                                 <td>@u.LastLoginAt?.ToString("yyyy-MM-dd HH:mm")</td>
@@ -178,7 +167,6 @@
                 document.querySelectorAll(".rowCheck").forEach(cb => cb.checked = this.checked);
             });
         }
-
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
         tooltipTriggerList.forEach(el => new bootstrap.Tooltip(el));
     </script>

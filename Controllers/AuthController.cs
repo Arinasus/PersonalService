@@ -119,11 +119,7 @@ namespace WebApplication2.Controllers
                 TempData["Error"] = "Токен подтверждения недействителен.";
                 return RedirectToAction("Login");
             }
-
-            // important: меняем статус
             user.Status = UserStatus.Active;
-
-            // note: токен больше не нужен
             user.ConfirmToken = null;
 
             _context.SaveChanges();
