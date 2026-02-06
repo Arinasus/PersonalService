@@ -15,10 +15,6 @@ namespace WebApplication2.Controllers
         // GET
         public IActionResult Index(string sort = "lastLogin", string dir = "desc", string search = "", string status = "")
         {
-            var userID = HttpContext.Session.GetInt32("UserId");
-            if (userID == null)
-                return RedirectToAction("Login", "Auth");
-
             var users = _context.Users.AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))

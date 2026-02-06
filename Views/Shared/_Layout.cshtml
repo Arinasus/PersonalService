@@ -6,10 +6,7 @@
 
     <title>@ViewData["Title"] - User Manager</title>
 
-    <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Bootstrap Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <style>
@@ -19,10 +16,10 @@
             font-weight: 600;
         }
 
-            a.table-sort:hover {
-                color: #86612F;
-                text-decoration: underline;
-            }
+        a.table-sort:hover {
+            color: #86612F;
+            text-decoration: underline;
+        }
 
         body {
             background: #FAFAFA;
@@ -37,18 +34,15 @@
             background-color: #86612F;
             border-color: #86612F;
         }
-
-            .btn-primary:hover {
-                background-color: #52311B;
-                border-color: #52311B;
-            }
-
+        .btn-primary:hover {
+            background-color: #52311B;
+            border-color: #52311B;
+        }
         .btn-warning {
             background-color: #D0D2CF;
             border-color: #D0D2CF;
             color: #52311B;
         }
-
             .btn-warning:hover {
                 background-color: #575C55;
                 border-color: #575C55;
@@ -63,46 +57,38 @@
         .card {
             border-color: #D0D2CF;
         }
-        /* Убираем синий outline и синий фон при клике */
         .btn:focus,
         .btn:active,
         .btn:focus:active {
             box-shadow: none !important;
             outline: none !important;
         }
-
-        /* Для всех кнопок — убираем синий фон Bootstrap */
         .btn-primary:focus,
         .btn-primary:active {
             background-color: #52311B !important;
             border-color: #52311B !important;
         }
-
         .btn-warning:focus,
         .btn-warning:active {
             background-color: #575C55 !important;
             border-color: #575C55 !important;
             color: white !important;
         }
-
         .btn-danger:focus,
         .btn-danger:active {
             background-color: #52311B !important;
             border-color: #52311B !important;
         }
-
         .btn-outline-danger:focus,
         .btn-outline-danger:active {
             background-color: #86612F !important;
             border-color: #86612F !important;
             color: white !important;
         }
-
     </style>
 </head>
 
 <body>
-    <!-- Навбар -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="/Users/Index">User Manager</a>
@@ -118,8 +104,6 @@
     <div class="container content-wrapper">
         @RenderBody()
     </div>
-
-    <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)
 </body>

@@ -41,12 +41,11 @@ namespace WebApplication2.Controllers
                 RegisteredAt = DateTime.UtcNow,
                 ConfirmToken = token
             };
-            if (password.Length < 6 || !password.Any(char.IsDigit) || !password.Any(ch => !char.IsLetterOrDigit(ch)))
+            if (string.IsNullOrWhiteSpace(password))
             {
-                ViewBag.Error = "Пароль должен содержать минимум 6 символов, хотя бы одну цифру и один специальный символ.";
+                ViewBag.Error = "Пароль не может быть пустым.";
                 return View();
             }
-
             try
             {
                 _context.Users.Add(user);
@@ -104,13 +103,22 @@ namespace WebApplication2.Controllers
             var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString("x");
             return $"{time}-{random}";
         }
-        public IActionResult ConfirmEmail(string token) { if (string.IsNullOrEmpty(token)) { 
+        // IMPORTANT: email confirmation should leave the user blocked
+        public IActionResult ConfirmEmail(string token) 
+        { 
+            if (string.IsNullOrEmpty(token)) 
+            { 
                 TempData["Error"] = "Некорректная ссылка подтверждения."; 
-                return RedirectToAction("Login"); } 
+                return RedirectToAction("Login"); 
+            } 
             var user = _context.Users.FirstOrDefault(u => u.ConfirmToken == token); 
-            if (user == null) { TempData["Error"] = "Токен подтверждения недействителен."; 
-                return RedirectToAction("Login"); } 
-            user.Status = UserStatus.Active; 
+            if (user == null) 
+            { 
+                TempData["Error"] = "Токен подтверждения недействителен."; 
+                return RedirectToAction("Login"); 
+            }
+            if (user.Status == UserStatus.Unverified)
+                user.Status = UserStatus.Active;
             user.ConfirmToken = null; 
             _context.SaveChanges(); 
             TempData["Success"] = "Email успешно подтверждён! Теперь вы можете войти."; 
