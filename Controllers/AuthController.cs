@@ -31,6 +31,11 @@ namespace WebApplication2.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(string name, string email, string password)
         {
+            if (string.IsNullOrWhiteSpace(password))
+            {
+                ViewBag.Error = "Пароль не может быть пустым.";
+                return View();
+            }
             var token = GetUniqIdValue();
             var user = new User
             {
@@ -41,11 +46,7 @@ namespace WebApplication2.Controllers
                 RegisteredAt = DateTime.UtcNow,
                 ConfirmToken = token
             };
-            if (string.IsNullOrWhiteSpace(password))
-            {
-                ViewBag.Error = "Пароль не может быть пустым.";
-                return View();
-            }
+
             try
             {
                 _context.Users.Add(user);
@@ -56,18 +57,21 @@ namespace WebApplication2.Controllers
                 ViewBag.Error = "Такой Email уже существует.";
                 return View();
             }
-            var confirmLink = Url.Action("ConfirmEmail", "Auth", new { token = user.ConfirmToken }, Request.Scheme);
-            var body = $"<h2>Здравствуйте, {user.Name}!</h2><p>Для подтверждения регистрации перейдите по ссылке: <a href='{confirmLink}'>Подтвердить Email</a></p>";
-            try
-            {
-                await _email.SendEmailAsync(user.Email, "Подтверждение регистрации", body);
-                TempData["Success"] = "Регистрация успешна! Проверьте вашу почту для подтверждения.";
-            }
-            catch
-            {
-                // important: do not fail registration if email cannot be sent
-                TempData["Success"] = "Регистрация успешна, но письмо не удалось отправить. Вы можете войти в систему.";
-            }
+            var confirmLink = Url.Action("ConfirmEmail", "Auth", 
+                new { token = user.ConfirmToken }, Request.Scheme); 
+            var body = $@" <h2>Здравствуйте, {user.Name}!</h2> <p>Для подтверждения регистрации перейдите по ссылке:</p> <p><a href='{confirmLink}'>Подтвердить Email</a></p> "; 
+            _ = Task.Run(async () => 
+            { 
+                try 
+                { 
+                    await _email.SendEmailAsync(user.Email, "Подтверждение регистрации", body); 
+                } 
+                catch 
+                { 
+                    // note: ignore SMTP errors, Render/Railway block SMTP
+                } 
+            }); 
+            TempData["Success"] = "Аккаунт создан. Письмо отправить не удалось, но вы можете войти."; 
             return RedirectToAction("Login");
         }
 
