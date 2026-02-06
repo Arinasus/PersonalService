@@ -56,10 +56,18 @@ namespace WebApplication2.Controllers
                 ViewBag.Error = "Такой Email уже существует.";
                 return View();
             }
-            var confirmLink = Url.Action("ConfirmEmail", "Auth", new { token = user.ConfirmToken }, Request.Scheme); 
-            var body = $"<h2>Здравствуйте, {user.Name}!</h2><p>Для подтверждения регистрации перейдите по ссылке: <a href='{confirmLink}'>Подтвердить Email</a></p>"; 
-            await _email.SendEmailAsync(user.Email, "Подтверждение регистрации", body);
-            TempData["Success"] = "Регистрация успешна! Теперь войдите в систему."; 
+            var confirmLink = Url.Action("ConfirmEmail", "Auth", new { token = user.ConfirmToken }, Request.Scheme);
+            var body = $"<h2>Здравствуйте, {user.Name}!</h2><p>Для подтверждения регистрации перейдите по ссылке: <a href='{confirmLink}'>Подтвердить Email</a></p>";
+            try
+            {
+                await _email.SendEmailAsync(user.Email, "Подтверждение регистрации", body);
+                TempData["Success"] = "Регистрация успешна! Проверьте вашу почту для подтверждения.";
+            }
+            catch
+            {
+                // important: do not fail registration if email cannot be sent
+                TempData["Success"] = "Регистрация успешна, но письмо не удалось отправить. Вы можете войти в систему.";
+            }
             return RedirectToAction("Login");
         }
 
