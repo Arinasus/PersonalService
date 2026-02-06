@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using WebApplication2.Data;
 using WebApplication2.Models;
 using WebApplication2.Services;
@@ -58,8 +57,9 @@ namespace WebApplication2.Controllers
                 ViewBag.Error = "Такой Email уже существует.";
                 return View();
             }
-            await _email.SendConfirmationEmailAsync(user.Email, token);
-
+            var confirmLink = Url.Action("ConfirmEmail", "Auth", new { token = user.ConfirmToken }, Request.Scheme); 
+            var body = $"<h2>Здравствуйте, {user.Name}!</h2><p>Для подтверждения регистрации перейдите по ссылке: <a href='{confirmLink}'>Подтвердить Email</a></p>"; 
+            await _email.SendEmailAsync(user.Email, "Подтверждение регистрации", body);
             TempData["Success"] = "Регистрация успешна! Теперь войдите в систему."; 
             return RedirectToAction("Login");
         }
@@ -104,28 +104,17 @@ namespace WebApplication2.Controllers
             var time = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString("x");
             return $"{time}-{random}";
         }
-        public IActionResult Confirm(string token)
-        {
-            if (string.IsNullOrEmpty(token))
-            {
-                TempData["Error"] = "Некорректная ссылка подтверждения.";
-                return RedirectToAction("Login");
-            }
-
-            var user = _context.Users.FirstOrDefault(u => u.ConfirmToken == token);
-
-            if (user == null)
-            {
-                TempData["Error"] = "Токен подтверждения недействителен.";
-                return RedirectToAction("Login");
-            }
-            user.Status = UserStatus.Active;
-            user.ConfirmToken = null;
-
-            _context.SaveChanges();
-
-            TempData["Success"] = "Email успешно подтверждён! Теперь вы можете войти.";
-            return RedirectToAction("Login");
+        public IActionResult ConfirmEmail(string token) { if (string.IsNullOrEmpty(token)) { 
+                TempData["Error"] = "Некорректная ссылка подтверждения."; 
+                return RedirectToAction("Login"); } 
+            var user = _context.Users.FirstOrDefault(u => u.ConfirmToken == token); 
+            if (user == null) { TempData["Error"] = "Токен подтверждения недействителен."; 
+                return RedirectToAction("Login"); } 
+            user.Status = UserStatus.Active; 
+            user.ConfirmToken = null; 
+            _context.SaveChanges(); 
+            TempData["Success"] = "Email успешно подтверждён! Теперь вы можете войти."; 
+            return RedirectToAction("Login"); 
         }
 
     }

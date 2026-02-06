@@ -1,35 +1,29 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Mail;
-using System.Net.Http.Json;
+using System.Threading.Tasks;
 
 namespace WebApplication2.Services
 {
-    public class EmailService
-    {
-        private readonly IConfiguration _config; 
-        private readonly HttpClient _http; 
-        public EmailService(IConfiguration config, HttpClient http) {
-            _config = config; _http = http; 
-        }
-        public async Task SendConfirmationEmailAsync(string email, string token)
-        {
-            var baseUrl = _config["BASE_URL"]; var confirmLink = $"{baseUrl}/Auth/Confirm?token={token}"; var html = $@" <h2>Подтверждение регистрации</h2> <p>Для активации аккаунта нажмите:</p> <a href='{confirmLink}'>Подтвердить Email</a> "; var payload = new
-            {
-                From = "1227721@mtp.by",
-                To = email, 
-                Subject = "Подтверждение регистрации", 
-                HtmlBody = html 
-            }; 
-            _http.DefaultRequestHeaders.Clear(); 
-            _http.DefaultRequestHeaders.Add("X-Postmark-Server-Token", 
-                _config["POSTMARK_API_TOKEN"]); 
-            var response = await _http.PostAsJsonAsync("https://api.postmarkapp.com/email", payload); 
-            if (!response.IsSuccessStatusCode) { 
-                var error = await response.Content.ReadAsStringAsync(); 
-                Console.WriteLine("POSTMARK ERROR: " + error); 
-                throw new Exception("Postmark email failed: " + error); 
+    public class EmailService { 
+        private readonly string _smtpEmail; 
+        private readonly string _smtpPassword; 
+        private readonly string _smtpHost; 
+        private readonly int _smtpPort; 
+        public EmailService() { 
+            _smtpEmail = Environment.GetEnvironmentVariable("SMTP_EMAIL"); 
+            _smtpPassword = Environment.GetEnvironmentVariable("SMTP_PASSWORD");
+            _smtpHost = Environment.GetEnvironmentVariable("SMTP_HOST") ?? "smtp.gmail.com"; 
+            _smtpPort = int.TryParse(Environment.GetEnvironmentVariable("SMTP_PORT"), out var port) ? port : 587; 
+        } 
+        public async Task SendEmailAsync(string to, string subject, string body) { 
+            if (string.IsNullOrEmpty(_smtpEmail) || string.IsNullOrEmpty(_smtpPassword)) throw new InvalidOperationException("SMTP credentials are not configured."); 
+            using (var smtp = new SmtpClient(_smtpHost, _smtpPort)) { 
+                smtp.Credentials = new NetworkCredential(_smtpEmail, _smtpPassword); 
+                smtp.EnableSsl = true; var message = new MailMessage(_smtpEmail, to, subject, body) { 
+                    IsBodyHtml = true }; 
+                await smtp.SendMailAsync(message); 
             } 
-        }
-
+        } 
     }
 }
